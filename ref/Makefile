@@ -1,13 +1,13 @@
 CC   = mpicc
 LD   = mpicc
-CPPFLAGS = -I.
+CPPFLAGS = -I. -I${VNV_DIR}/include 
 CFLAGS = -O3
-LDFLAGS =
-LDLIBS = -lm
+LDFLAGS = 
+LDLIBS = -lm -L${VNV_DIR}/lib -linjection
 
 EXEC = miniAMR.x
 
-OBJS = block.o check_sum.o comm_block.o comm.o comm_parent.o comm_refine.o \
+OBJS = vnv_MINIAMR.o block.o check_sum.o comm_block.o comm.o comm_parent.o comm_refine.o \
        comm_util.o driver.o init.o main.o move.o pack.o plot.o profile.o \
        rcb.o refine.o sfc.o stencil.o util.o
 
@@ -19,6 +19,9 @@ $(EXEC): $(OBJS)
 
 clean:
 	rm *.o miniAMR.x
+
+vnv:
+	${VNV_DIR}/bin/vnv-matcher --package MINIAMR --extension c --output vnv compile_commands.json
 
 # need dependencies
 

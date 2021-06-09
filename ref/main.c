@@ -35,6 +35,12 @@
 #include "timer.h"
 #include "proto.h"
 
+#include "VnV.h"
+
+INJECTION_EXECUTABLE(MINIAMR,VnV,mpi)
+
+
+
 int main(int argc, char** argv)
 {
    int i, ierr, object_num;
@@ -46,6 +52,10 @@ int main(int argc, char** argv)
    ierr = MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_ARE_FATAL);
    ierr = MPI_Comm_rank(MPI_COMM_WORLD, &my_pe);
    ierr = MPI_Comm_size(MPI_COMM_WORLD, &num_pes);
+
+   INJECTION_INITIALIZE(MINIAMR, &argc, &argv, "./vnv-input.json");
+
+
 
    counter_malloc = 0;
    size_malloc = 0.0;
@@ -331,6 +341,7 @@ int main(int argc, char** argv)
 
    MPI_Barrier(MPI_COMM_WORLD);
 
+   INJECTION_FINALIZE("MINIAMR");
    MPI_Finalize();
 
    exit(0);
