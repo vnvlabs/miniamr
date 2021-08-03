@@ -21,7 +21,7 @@ clean:
 	rm *.o miniAMR.x
 
 vnv:
-	${VNV_DIR}/bin/vnv-matcher --package MINIAMR --extension c --output vnv compile_commands.json
+	${VNV_DIR}/bin/vnv-matcher --package MINIAMR --output vnv_MINIAMR.c --cache vnv.__cache__ compile_commands.json
 
 # need dependencies
 
