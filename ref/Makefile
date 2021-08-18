@@ -62,3 +62,6 @@ sfc.o: block.h comm.h proto.h timer.h
 stencil.o: block.h comm.h proto.h
 
 util.o: block.h comm.h proto.h timer.h
+
+.PHONY: vnv
+
