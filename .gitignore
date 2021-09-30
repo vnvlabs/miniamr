@@ -1,1 +1,5 @@
+*.x
 *.o
+compile_commands.json
+vnv.__cache__
+ref/vv-output
