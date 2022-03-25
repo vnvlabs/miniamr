@@ -37,24 +37,26 @@
 
 #include "VnV.h"
 
-#include "param.h"
-
 INJECTION_EXECUTABLE(MINIAMR)
 
 
 int main(int argc, char** argv)
 {
    int i, ierr, object_num;
+   int params[39];
    double *objs, t1;
-   
+#include "param.h"
 
+   
    ierr = MPI_Init(&argc, &argv);
    ierr = MPI_Comm_set_errhandler(MPI_COMM_WORLD, MPI_ERRORS_ARE_FATAL);
    ierr = MPI_Comm_rank(MPI_COMM_WORLD, &my_pe);
    ierr = MPI_Comm_size(MPI_COMM_WORLD, &num_pes);
-   
-   INJECTION_INITIALIZE(MINIAMR, &argc, &argv, "./vnv-input.json");
-   
+
+   INJECTION_INITIALIZE(MINIAMR,&argc,&argv,"vv-input.json");
+
+
+   t1 = timer();
    counter_malloc = 0;
    size_malloc = 0.0;
    num_objects = object_num = 0;
@@ -62,15 +64,96 @@ int main(int argc, char** argv)
    /* set initial values */
    if (!my_pe) {
       for (i = 1; i < argc; i++)
-         
-         
+         if (!strcmp(argv[i], "--max_blocks"))
+            max_num_blocks = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--num_refine"))
+            num_refine = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--block_change"))
+            block_change = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--uniform_refine"))
+            uniform_refine = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--nx"))
+            x_block_size = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--ny"))
+            y_block_size = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--nz"))
+            z_block_size = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--num_vars"))
+            num_vars = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--comm_vars"))
+            comm_vars = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--init_x"))
+            init_block_x = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--init_y"))
+            init_block_y = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--init_z"))
+            init_block_z = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--reorder"))
+            reorder = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--npx"))
+            npx = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--npy"))
+            npy = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--npz"))
+            npz = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--inbalance"))
+            inbalance = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--lb_opt"))
+            lb_opt = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--refine_freq"))
+            refine_freq = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--report_diffusion"))
+            report_diffusion = 1;
+         else if (!strcmp(argv[i], "--error_tol"))
+            error_tol = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--num_tsteps")) {
+            num_tsteps = atoi(argv[++i]);
+            use_tsteps = 1;
+         } else if (!strcmp(argv[i], "--time")) {
+            end_time = atof(argv[++i]);
+            use_time = 1;
+         } else if (!strcmp(argv[i], "--stages_per_ts"))
+            stages_per_ts = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--checksum_freq"))
+            checksum_freq = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--stencil"))
+            stencil = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--permute"))
+            permute = 1;
+         else if (!strcmp(argv[i], "--report_perf"))
+            report_perf = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--plot_freq"))
+            plot_freq = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--code"))
+            code = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--blocking_send"))
+            nonblocking = 0;
+         else if (!strcmp(argv[i], "--refine_ghost"))
+            refine_ghost = 1;
+         else if (!strcmp(argv[i], "--change_dir"))
+            change_dir = 1;
+         else if (!strcmp(argv[i], "--group_blocks"))
+            group_blocks = 1;
+         else if (!strcmp(argv[i], "--break_ties"))
+            group_blocks = 2;
+         else if (!strcmp(argv[i], "--limit_move"))
+            limit_move = atoi(argv[++i]);
+         else if (!strcmp(argv[i], "--send_faces"))
+            send_faces = 1;
+         else if (!strcmp(argv[i], "--rcb"))
+            lb_method = 0;   // default, but included for completeness
+         else if (!strcmp(argv[i], "--morton"))
+            lb_method = 1;
+         else if (!strcmp(argv[i], "--hilbert"))
+            lb_method = 2;
+         else if (!strcmp(argv[i], "--trunc_hilbert"))
+            lb_method = 3;
          else if (!strcmp(argv[i], "--num_objects")) {
             num_objects = atoi(argv[++i]);
             objects = (object *) ma_malloc(num_objects*sizeof(object),
                                            __FILE__, __LINE__);
             object_num = 0;
          } else if (!strcmp(argv[i], "--object")) {
-            
             if (object_num >= num_objects) {
                printf("object number greater than num_objects\n");
                MPI_Abort(MPI_COMM_WORLD, -1);
@@ -90,32 +173,173 @@ int main(int argc, char** argv)
             objects[object_num].inc[1] = atof(argv[++i]);
             objects[object_num].inc[2] = atof(argv[++i]);
             object_num++;
-         
+         } else if (!strcmp(argv[i], "--help")) {
+            print_help_message();
+            MPI_Abort(MPI_COMM_WORLD, -1);
+         } else {
+            printf("** Error ** Unknown input parameter %s\n", argv[i]);
+            print_help_message();
+            MPI_Abort(MPI_COMM_WORLD, -1);
+         }
 
-   if (object_num != num_objects) {
-      printf("Error - number of objects less than specified");
-      MPI_Abort(MPI_COMM_WORLD, -1);
+      if (object_num != num_objects) {
+         printf("Error - number of objects less than specified");
+         MPI_Abort(MPI_COMM_WORLD, -1);
+      }
+
+      if (reorder == -1)
+         if (!lb_method)
+            reorder = 1;
+         else
+            reorder = 0;
+
+      if (check_input())
+         MPI_Abort(MPI_COMM_WORLD, -1);
+
+      if (!block_change)
+         block_change = num_refine;
+
+      params[ 0] = max_num_blocks;
+      params[ 1] = num_refine;
+      params[ 2] = uniform_refine;
+      params[ 3] = x_block_size;
+      params[ 4] = y_block_size;
+      params[ 5] = z_block_size;
+      params[ 6] = num_vars;
+      params[ 7] = comm_vars;
+      params[ 8] = init_block_x;
+      params[ 9] = init_block_y;
+      params[10] = init_block_z;
+      params[11] = reorder;
+      params[12] = npx;
+      params[13] = npy;
+      params[14] = npz;
+      params[15] = inbalance;
+      params[16] = refine_freq;
+      params[17] = report_diffusion;
+      params[18] = error_tol;
+      params[19] = num_tsteps;
+      params[20] = stencil;
+      params[21] = report_perf;
+      params[22] = plot_freq;
+      params[23] = num_objects;
+      params[24] = checksum_freq;
+      params[25] = stages_per_ts;
+      params[26] = lb_opt;
+      params[27] = block_change;
+      params[28] = code;
+      params[29] = permute;
+      params[30] = nonblocking;
+      params[31] = refine_ghost;
+      params[32] = use_time;
+      params[33] = change_dir;
+      params[34] = group_blocks;
+      params[35] = limit_move;
+      params[36] = send_faces;
+      params[37] = lb_method;
+      params[38] = use_tsteps;
+
+      MPI_Bcast(params, 39, MPI_INT, 0, MPI_COMM_WORLD);
+      if (use_time)
+         MPI_Bcast(&end_time, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+      objs = (double *) ma_malloc(14*num_objects*sizeof(double),
+                                  __FILE__, __LINE__);
+      for (i = object_num = 0; object_num < num_objects; object_num++) {
+         objs[i++] = (double) objects[object_num].type;
+         objs[i++] = (double) objects[object_num].bounce;
+         objs[i++] = objects[object_num].cen[0];
+         objs[i++] = objects[object_num].cen[1];
+         objs[i++] = objects[object_num].cen[2];
+         objs[i++] = objects[object_num].move[0];
+         objs[i++] = objects[object_num].move[1];
+         objs[i++] = objects[object_num].move[2];
+         objs[i++] = objects[object_num].size[0];
+         objs[i++] = objects[object_num].size[1];
+         objs[i++] = objects[object_num].size[2];
+         objs[i++] = objects[object_num].inc[0];
+         objs[i++] = objects[object_num].inc[1];
+         objs[i++] = objects[object_num].inc[2];
+      }
+
+      MPI_Bcast(objs, (14*num_objects), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+      free(objs);
+   } else {
+      MPI_Bcast(params, 39, MPI_INT, 0, MPI_COMM_WORLD);
+      max_num_blocks = params[ 0];
+      num_refine = params[ 1];
+      uniform_refine = params[ 2];
+      x_block_size = params[ 3];
+      y_block_size = params[ 4];
+      z_block_size = params[ 5];
+      num_vars = params[ 6];
+      comm_vars = params[ 7];
+      init_block_x = params[ 8];
+      init_block_y = params[ 9];
+      init_block_z = params[10];
+      reorder = params[11];
+      npx = params[12];
+      npy = params[13];
+      npz = params[14];
+      inbalance = params[15];
+      refine_freq = params[16];
+      report_diffusion = params[17];
+      error_tol = params[18];
+      num_tsteps = params[19];
+      stencil = params[20];
+      report_perf = params[21];
+      plot_freq = params[22];
+      num_objects = params[23];
+      checksum_freq = params[24];
+      stages_per_ts = params[25];
+      lb_opt = params[26];
+      block_change = params[27];
+      code = params[28];
+      permute = params[29];
+      nonblocking = params[30];
+      refine_ghost = params[31];
+      use_time = params[32];
+      change_dir = params[33];
+      group_blocks = params[34];
+      limit_move = params[35];
+      send_faces = params[36];
+      lb_method = params[37];
+      use_tsteps = params[38];
+
+      if (use_time)
+         MPI_Bcast(&end_time, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+      objects = (object *) ma_malloc(num_objects*sizeof(object),
+                                     __FILE__, __LINE__);
+      objs = (double *) ma_malloc(14*num_objects*sizeof(double),
+                                  __FILE__, __LINE__);
+
+      MPI_Bcast(objs, (14*num_objects), MPI_DOUBLE, 0, MPI_COMM_WORLD);
+
+      for (i = object_num = 0; object_num < num_objects; object_num++) {
+         objects[object_num].type = (int) objs[i++];
+         objects[object_num].bounce = (int) objs[i++];
+         objects[object_num].cen[0] = objs[i++];
+         objects[object_num].cen[1] = objs[i++];
+         objects[object_num].cen[2] = objs[i++];
+         objects[object_num].move[0] = objs[i++];
+         objects[object_num].move[1] = objs[i++];
+         objects[object_num].move[2] = objs[i++];
+         objects[object_num].size[0] = objs[i++];
+         objects[object_num].size[1] = objs[i++];
+         objects[object_num].size[2] = objs[i++];
+         objects[object_num].inc[0] = objs[i++];
+         objects[object_num].inc[1] = objs[i++];
+         objects[object_num].inc[2] = objs[i++];
+      }
+      free(objs);
    }
-
-   if (reorder == -1)
-     if (!lb_method)
-         reorder = 1;
-     else
-         reorder = 0;
-
-   if (check_input())
-      MPI_Abort(MPI_COMM_WORLD, -1);
-
-   if (!block_change)
-      block_change = num_refine;
-
-   for (object_num = 0; object_num < num_objects; object_num++) {
-     for (i = 0; i < 3; i++) {
+   for (object_num = 0; object_num < num_objects; object_num++)
+      for (i = 0; i < 3; i++) {
          objects[object_num].orig_cen[i] = objects[object_num].cen[i];
          objects[object_num].orig_move[i] = objects[object_num].move[i];
          objects[object_num].orig_size[i] = objects[object_num].size[i];
-     }
-   }
+      }
 
    allocate();
 
@@ -131,10 +355,10 @@ int main(int argc, char** argv)
    }
 
    timer_main = timer() - t1;
+   
+   INJECTION_LOOP_BEGIN("MINIAMR",VWORLD,"driver",init_x,init_y,init_z);
    driver();
-
-   INJECTION_POINT("MINIAMR", VSELF, "MY_FIRST_INJECTION_POINT", argc);
-
+   INJECTION_LOOP_END("MINIAMR","driver");
 
    profile();
 
@@ -142,9 +366,12 @@ int main(int argc, char** argv)
 
    fflush(NULL);
 
+   INJECTION_FINALIZE(MINIAMR);
+
    MPI_Barrier(MPI_COMM_WORLD);
 
-   INJECTION_FINALIZE("MINIAMR");
+
+
    MPI_Finalize();
 
    exit(0);
@@ -507,6 +734,8 @@ int check_input(void)
       printf("lb_opt must be 0, 1, or 2\n");
       error = 1;
    }
+
+   
 
    return (error);
 }

@@ -43,7 +43,7 @@ driver.o: block.h comm.h proto.h timer.h
 
 init.o: block.h proto.h comm.h
 
-main.o: block.h comm.h proto.h param.h timer.h
+main.o: block.h comm.h proto.h timer.h
 
 move.o: block.h comm.h proto.h
 

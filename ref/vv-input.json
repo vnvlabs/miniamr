@@ -1,0 +1,15 @@
+﻿{
+  "runTests": true,
+  "outputEngine": {
+    "json_file" : {
+       "filename" : "outputs/run"
+    }
+  },
+  "injectionPoints": {
+     "VNV:initialization" : {
+        "tests" : {
+          "VNV:cputime" : {}
+	      }
+     }	     
+  }
+}
