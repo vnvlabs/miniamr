@@ -20,5 +20,6 @@ RUN cd ${SOURCE_DIR}/miniAMR/ref \
                                   compile_commands.json\
     && make 
 
-ENV VNV_CONFIG=${VNV_CONFIG}:${SOURCE_DIR}/miniAMR/vnv.__registration__
+ENV VNV_CONFIG=${VNV_CONFIG}:${SOURCE_DIR}/miniAMR/ref/vnv.__registration__
+ENV VNV_CONFIG=${VNV_CONFIG}:${SOURCE_DIR}/miniAMR/docker/config/vnv.__registration__
 
