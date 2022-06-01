@@ -356,9 +356,9 @@ int main(int argc, char** argv)
 
    timer_main = timer() - t1;
    
-   INJECTION_LOOP_BEGIN("MINIAMR",VWORLD,"driver",init_x,init_y,init_z);
+   INJECTION_LOOP_BEGIN(MINIAMR,VWORLD,driver,init_x,init_y,init_z);
    driver();
-   INJECTION_LOOP_END("MINIAMR","driver");
+   INJECTION_LOOP_END(MINIAMR,driver);
 
    profile();
 
