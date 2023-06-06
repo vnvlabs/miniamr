@@ -15,4 +15,4 @@ RUN cd ${SOFTWARE_DIR}/miniAMR/ref \
                                   compile_commands.json\
     && make 
 
-RUN echo ${SOFTWARE_DIR}/miniAMR/vnv/gui/vnv.__registration__ >> ${HOME}/.vnv
+RUN python3 ${VNV_DIR}/scripts/register.py register ${SOFTWARE_DIR}/miniAMR/vnv/gui/vnv.__registration__ 
