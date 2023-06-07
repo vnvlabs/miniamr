@@ -37,7 +37,7 @@
 
 #include "VnV.h"
 
-INJECTION_EXECUTABLE(MINIAMR)
+INJECTION_EXECUTABLE(MINIAMR,"{}")
 
 
 int main(int argc, char** argv)
