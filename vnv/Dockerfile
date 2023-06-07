@@ -13,5 +13,5 @@ RUN cd ${SOFTWARE_DIR}/miniAMR/ref \
 				                  --cache vnv.__cache__\
                                   compile_commands.json\
     && make 
-
-ENV VNV_CONFIG=${VNV_CONFIG}:${SOFTWARE_DIR}/miniAMR/vnv/gui/vnv.__registration__ 
+    
+RUN ${VNV_REGISTER} gui miniAMR ${SOFTWARE_DIR}/miniAMR/vnv/gui/vnv.__registration__ 
