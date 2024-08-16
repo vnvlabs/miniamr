@@ -14,4 +14,3 @@ RUN cd ${SOFTWARE_DIR}/miniAMR/ref \
                                   compile_commands.json\
     && make 
     
-RUN ${VNV_REGISTER} gui miniAMR ${SOFTWARE_DIR}/miniAMR/vnv/gui/vnv.__registration__ 

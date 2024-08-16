@@ -53,7 +53,7 @@ int main(int argc, char** argv)
    ierr = MPI_Comm_rank(MPI_COMM_WORLD, &my_pe);
    ierr = MPI_Comm_size(MPI_COMM_WORLD, &num_pes);
 
-   INJECTION_INITIALIZE(MINIAMR,&argc,&argv,"vv-input.json");
+   INJECTION_INITIALIZE(MINIAMR,&argc,&argv);
 
 
    t1 = timer();
